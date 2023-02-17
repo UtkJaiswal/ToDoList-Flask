@@ -40,5 +40,16 @@ def get_task(task_id):
     else:
         return jsonify({'error': 'No such task exist'})
 
+# API to create a new task
+@app.route('/tasks', methods=['POST'])
+def create_task():
+    description = request.json.get('description', '')
+    task_id = mongo.db.tasks.insert_one({ 'description': description, 'completed': False}).inserted_id
+    # task_id = str(mongo.db.tasks.insert_one({'title': title, 'description': description, 'completed': False}).inserted_id)
+    # print("task_id is",task_id)
+    new_task = mongo.db.tasks.find_one({'_id': task_id})
+    output = {'id': str(new_task['_id']), 'description': new_task['description'], 'completed': new_task['completed']}
+    return jsonify({'task': output})
+
 if __name__ == '__main__':
     app.run(debug=True)
