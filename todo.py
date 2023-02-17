@@ -79,5 +79,22 @@ def update_task(task_id):
         return jsonify({'error': str(e)}), 500
 
 
+# Mark a task as complete
+@app.route('/tasks/<string:task_id>/complete', methods=['PUT'])
+def complete_task(task_id):
+    task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+    if task:
+        if task['completed']:
+            return jsonify({'message': 'Task is already completed'}), 200
+        else:
+            mongo.db.tasks.update_one({'_id': ObjectId(task_id)}, {'$set': {'completed': True}})
+            updated_task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+            output = {'id': str(updated_task['_id']), 'description': updated_task['description'], 'completed': updated_task['completed']}
+            return jsonify({'task': output}), 200
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
