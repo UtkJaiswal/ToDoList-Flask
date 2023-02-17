@@ -24,32 +24,43 @@ def test_API():
 # API to Get all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    output = []
-    for task in mongo.db.tasks.find():
-        output.append({'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']})
-    return jsonify({'tasks': output})
+    try:
+        output = []
+        for task in mongo.db.tasks.find():
+            output.append({'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']})
+        return jsonify({'tasks': output}), 200
+    except:
+        return jsonify({'error': 'An error occurred'}), 500
+
 
 
 # API to get a particular task
 @app.route('/tasks/<string:task_id>', methods=['GET'])
 def get_task(task_id):
-    task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
-    if task:
-        output = {'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']}
-        return jsonify({'task': output})
-    else:
-        return jsonify({'error': 'No such task exist'})
+    try:
+        task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+        if task:
+            output = {'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']}
+            return jsonify({'task': output}), 200
+        else:
+            return jsonify({'error': 'No such task exist'}), 404
+    except:
+        return jsonify({'error': 'An error occurred'}), 500
+
 
 # API to create a new task
 @app.route('/tasks', methods=['POST'])
 def create_task():
-    description = request.json.get('description', '')
-    task_id = mongo.db.tasks.insert_one({ 'description': description, 'completed': False}).inserted_id
-    # task_id = str(mongo.db.tasks.insert_one({'title': title, 'description': description, 'completed': False}).inserted_id)
-    # print("task_id is",task_id)
-    new_task = mongo.db.tasks.find_one({'_id': task_id})
-    output = {'id': str(new_task['_id']), 'description': new_task['description'], 'completed': new_task['completed']}
-    return jsonify({'task': output})
+    try:
+        description = request.json.get('description', '')
+        task_id = mongo.db.tasks.insert_one({'description': description, 'completed': False}).inserted_id
+        new_task = mongo.db.tasks.find_one({'_id': task_id})
+        output = {'id': str(new_task['_id']), 'description': new_task['description'], 'completed': new_task['completed']}
+        return jsonify({'task': output}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
