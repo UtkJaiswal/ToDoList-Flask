@@ -21,7 +21,13 @@ mongo = PyMongo(app)
 def test_API():
     return jsonify({'message': "Your API is working fine"})
 
-
+# API to Get all tasks
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    output = []
+    for task in mongo.db.tasks.find():
+        output.append({'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']})
+    return jsonify({'tasks': output})
 
 
 if __name__ == '__main__':
