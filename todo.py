@@ -62,5 +62,22 @@ def create_task():
 
 
 
+# API to update an existing task
+@app.route('/tasks/<string:task_id>', methods=['PUT'])
+def update_task(task_id):
+    try:
+        task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+        if task:
+            description = request.json.get('description', task['description'])
+            mongo.db.tasks.update_one({'_id': ObjectId(task_id)}, {'$set': { 'description': description}})
+            updated_task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+            output = {'id': str(updated_task['_id']), 'description': updated_task['description'], 'completed': updated_task['completed']}
+            return jsonify({'task': output}), 200
+        else:
+            return jsonify({'error': 'No such task exist'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
