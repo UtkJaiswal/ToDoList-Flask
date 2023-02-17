@@ -30,5 +30,15 @@ def get_tasks():
     return jsonify({'tasks': output})
 
 
+# API to get a particular task
+@app.route('/tasks/<string:task_id>', methods=['GET'])
+def get_task(task_id):
+    task = mongo.db.tasks.find_one({'_id': ObjectId(task_id)})
+    if task:
+        output = {'id': str(task['_id']), 'description': task['description'], 'completed': task['completed']}
+        return jsonify({'task': output})
+    else:
+        return jsonify({'error': 'No such task exist'})
+
 if __name__ == '__main__':
     app.run(debug=True)
